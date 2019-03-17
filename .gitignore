@@ -63,7 +63,8 @@ typings/
 # project original rule
 items/*
 !util.js
-sites/
+sites/*
+!util.js
 data/
 configs/serviceaccount.json
 configs/serviceaccount_dev.json
