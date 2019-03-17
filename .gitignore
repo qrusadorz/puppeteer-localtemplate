@@ -59,3 +59,16 @@ typings/
 
 # next.js build output
 .next
+
+# project original rule
+items/*
+!util.js
+sites/
+data/
+configs/serviceaccount.json
+configs/serviceaccount_dev.json
+latest.json
+sitemap.xml
+.vscode/
+package-lock.json
+
