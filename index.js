@@ -161,6 +161,7 @@ const crawlSites = async (sites, browser) => {
     // 規定時間未満の連続アクセス防止
     const processTime = (Date.now() - nowTime) / 1000;
     if (processTime < crawlDuration) {
+        console.log('sleep...');
         await sleep(crawlDuration - processTime);
     }
 

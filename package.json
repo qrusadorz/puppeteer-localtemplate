@@ -6,7 +6,11 @@
     "shell": "firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+
+    "crawl": "node index.js",
+    "sitemap": "node createSitemap.js",
+    "chart": "node createItemDetailsData.js"
   },
   "dependencies": {
     "firebase": "^5.9.0",
