@@ -3,16 +3,18 @@ const { config } = require('../configs/config');
 
 const bucket = storage.bucket();
 
-const latestFilename = `latest.json`;
+const { itemsFilename } = config;
 
 const updateItems = async (items) => {
     // await db.collection("items").doc("latest").update(items);
     await db.collection("items").doc("latest").set(items);
 }
 
-const uploadItems = async () => {
+const uploadItems = async () => await uploadFile(itemsFilename);
+
+const uploadFile = async (filename) => {
     // Uploads a local file to the bucket
-    const response = await bucket.upload(latestFilename, {
+    const response = await bucket.upload(filename, {
         // Support for HTTP requests made with `Accept-Encoding: gzip`
         gzip: true,
         private: false,
@@ -67,7 +69,7 @@ const uploadItems = async () => {
     // console.log(`Metadata: ${metadata.metadata}`);
 }
 
-module.exports = { updateItems, uploadItems };
+module.exports = { updateItems, uploadItems, uploadFile };
 
 const setCors = async (bucket) => {
     await bucket.setMetadata({
