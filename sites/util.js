@@ -1,10 +1,9 @@
 const { masterItems, getBrands } = require('../items/masteritems')
-// for production
 const masterSites = [
+// for production
+
+    // for dev
 ];
-// for dev
-// const masterSites = [
-// ];
 
 const crypto = require('crypto');
 
@@ -30,7 +29,7 @@ const buildItems = masteritems => {
             if (!item) continue;
             sites.push(item);
         }
-        if (sites.length < 1) continue; // TODO for develop.producton is not 0 length.
+        if (sites.length < 1) continue; // possibly a bug, but also a new product.
         const uniqname = `${name} ${sku}`;
         result.push({
             id: md5ToBase64url(uniqname),
