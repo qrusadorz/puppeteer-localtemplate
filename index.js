@@ -6,6 +6,9 @@ const { config } = require('./configs/config');
 
 const fs = require("fs");
 
+const isRecovery = true;
+const isDev = false;
+const enableBrowserConsole = false;
 const crawlDuration = 6000;
 
 const latestFilename = `latest.json`;
@@ -58,7 +61,9 @@ const crawl = async (browser, param) => {
     // await page.screenshot({path: 'example.png'});
 
     // for debug
-    // page.on('console', msg => console.log('PAGE LOG:', msg.text()));
+    if (enableBrowserConsole) {
+        page.on('console', msg => console.log('PAGE LOG:', msg.text()));
+    }
 
     // before click
     if (clicks) {
@@ -120,7 +125,7 @@ const crawlSites = async (sites, browser) => {
 
     const nowTime = Date.now();
 
-    const resultItems = [];
+    let resultItems = [];
 
     try {
         // Promise version
@@ -131,17 +136,28 @@ const crawlSites = async (sites, browser) => {
 
         const results = await Promise.all(promises);
         // filter failed data
+        const items = [];
         for (const result of results) {
             if (!result || Number.isNaN(Number.parseInt(result.price))) {
-                // follow recovery.
-                // throw Error(`価格取得失敗:${result ? result.url : ""}`);
-                continue;
+                // follow recovery case.
+                throw Error(`価格取得失敗:${result ? result.url : ""}`);
+                // ignore case.
+                // continue;
             }
-            resultItems.push(result);
+            items.push(result);
         }
+        resultItems = items;
     }
     catch (e) {
         console.error(e);
+    } finally {
+        // 規定時間未満の連続アクセス防止
+        const processTime = (Date.now() - nowTime); //  / 1000;
+        if (processTime < crawlDuration) {
+            console.log('sleep...');
+            await sleep(crawlDuration - processTime);
+        }
+        return resultItems;
     }
 
     // each crawl version
@@ -157,15 +173,6 @@ const crawlSites = async (sites, browser) => {
     //         console.error(e);
     //     }
     // }
-
-    // 規定時間未満の連続アクセス防止
-    const processTime = (Date.now() - nowTime) / 1000;
-    if (processTime < crawlDuration) {
-        console.log('sleep...');
-        await sleep(crawlDuration - processTime);
-    }
-
-    return resultItems;
 }
 
 const crawlMain = async (browser, items, result, resultFailed) => {
@@ -227,8 +234,6 @@ const crawlMain = async (browser, items, result, resultFailed) => {
         //     }
         // }
 
-        const isRecovery = false;
-
         const items = isRecovery ? getSelectItems(readFailedItems().items) : getItems();
         const timestamp =  Date.now();
         const result = {
@@ -259,7 +264,10 @@ const crawlMain = async (browser, items, result, resultFailed) => {
         console.log(`main succeded:${time}s`);
 
         // for dev
-        // return;
+        // no store
+        if (isDev) {
+            return;
+        }
 
         // store result
         writeJsonToFile(result);
@@ -267,13 +275,14 @@ const crawlMain = async (browser, items, result, resultFailed) => {
         console.log("failed items:", resultFailed.items);
         if (resultFailed.items.length > 0) {
             writeJsonToFailedFile(resultFailed);
+            // If it fails, the server does not update.
         } else {
             deleteFailedFile();
+            // update data of firebase
+            await updateItems(result);
+            // uddate data of firestorage
+            await uploadItems();
         }
-        // update data of firebase
-        await updateItems(result);
-        // uddate data of firestorage
-        await uploadItems();
 
     } catch (e) {
         console.error(e);

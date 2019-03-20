@@ -69,6 +69,8 @@ data/
 configs/serviceaccount.json
 configs/serviceaccount_dev.json
 latest.json
+itemDetails.json
+failed.json
 sitemap.xml
 .vscode/
 package-lock.json
