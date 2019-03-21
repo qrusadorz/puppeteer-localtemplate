@@ -1,22 +1,7 @@
 const { masterItems, getBrands } = require('../items/masteritems')
 const masterSites = [
     // for production
-    require('./1-chome'),   // table
-    require('./1ban'),      // table
-    require('./about'),     // search
-    require('./dram'),      // table mac型番不一致のためMacなし
-    require('./god'),       // search
-    require('./io'),        // search
-    require('./jan'),       // search
-    require('./kaikun'),    // search
-    require('./mix'),       // table puppteer bugでカラム中の文字列が取れないことがある。
-    require('./rakuen'),    // table
-    require('./star'),      // table
-    // require('./twink'),      // 未 どれが正しいのか不明のため
-    require('./wiki'),      // search
-
     // for dev
-    // require('./dram'),
 ];
 
 const crypto = require('crypto');

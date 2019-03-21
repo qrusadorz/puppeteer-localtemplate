@@ -6,7 +6,7 @@ const { config } = require('./configs/config');
 
 const fs = require("fs");
 
-const isRecovery = true;
+const isRecovery = false;
 const isDev = false;
 const enableBrowserConsole = false;
 const crawlDuration = 6000;
@@ -234,6 +234,7 @@ const crawlMain = async (browser, items, result, resultFailed) => {
         //         await crawl(browser, param);
         //     }
         // }
+        console.log("isDev:", isDev);
 
         const items = isRecovery ? getSelectItems(readFailedItems().items) : getItems();
         const timestamp =  Date.now();
@@ -248,6 +249,11 @@ const crawlMain = async (browser, items, result, resultFailed) => {
         // 数が少ないのでfind活用でもいいかもしれないが…find->remove
 
         await crawlMain(browser, items, result, resultFailed);
+        // for dev
+        // no store
+        if (isDev) {
+            return;
+        }
 
         // retry failed items
         if (!isRecovery) {
@@ -263,12 +269,6 @@ const crawlMain = async (browser, items, result, resultFailed) => {
 
         const time = (Date.now() - timestamp) / 1000;
         console.log(`main succeded:${time}s`);
-
-        // for dev
-        // no store
-        if (isDev) {
-            return;
-        }
 
         // store result
         writeJsonToFile(result);
