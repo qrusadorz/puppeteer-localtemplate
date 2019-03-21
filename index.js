@@ -177,7 +177,7 @@ const crawlSites = async (sites, browser) => {
 
 const crawlMain = async (browser, items, result, resultFailed) => {
     for (const item of items) {
-        const { id, name, sku, url, ogimg, price, brand, sites } = item;
+        const { id, name, sku, url, ogimg, price, brand, release, sites } = item;
 
         const resultItems = await crawlSites(sites, browser);
         // store failed item
@@ -207,6 +207,7 @@ const crawlMain = async (browser, items, result, resultFailed) => {
             // static data
             id, name, sku, url, ogimg, price, brand,
             // dynamic data
+            release,
             bestprice,
             percentage,
             timestamp: Date.now(),
