@@ -1,7 +1,6 @@
 const { masterItems, getBrands } = require('../items/masteritems')
 const masterSites = [
-// for production
-
+    // for production
     // for dev
 ];
 
@@ -18,11 +17,14 @@ const crypto = require('crypto');
 const md5ToBase64url = (str) => crypto.createHash('md5').update(str, 'binary').digest('base64')
     .replace(/=+/g, '') // delete padding
     .replace(/\++/g, '-').replace(/\/+/g, '_'); // convert base64 to base64url
+    // base64url test data
+    // MacBook 256GB シルバー MNYH2J/A
+    // MacBook 512GB シルバー MNYJ2J/A
 
 const buildItems = masteritems => {
     const result = [];
     for (const masteritem of masteritems) {
-        const { key, name, url, ogimg = "", price, sku = "", brand = "" } = masteritem;
+        const { key, name, url, ogimg = "", price, sku = "", brand = "", release = "" } = masteritem;
         const sites = [];
         for (const site of masterSites) {
             const item = site[key];
@@ -39,6 +41,8 @@ const buildItems = masteritems => {
             sites,
             // schema関連
             brand, sku,
+            // 新製品判定
+            release,
         });
     }
     // console.log("result:", result);
