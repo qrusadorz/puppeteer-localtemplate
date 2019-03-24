@@ -115,7 +115,7 @@ const crawl = async (browser, param) => {
 
     const price = saveFunction(results);
     if (!price) {
-        console.error("result:", param.url, price);
+        console.error("result:", param.url, param.keyword, price);
     }
 
     return { url: param.url, price };
