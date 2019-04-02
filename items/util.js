@@ -1,6 +1,6 @@
 const { masterItems } = require('./masteritems')
 
-const getItems = (paramObject, resultsSelector, pageFunction, saveFunction) => {
+const getItems = (paramObject, resultsSelector, pageFunction, saveFunction, name) => {
     // Object => Array
     const params = Object.keys(paramObject).map(key => ({ ...paramObject[key], key}));
     // not work now.
@@ -20,6 +20,7 @@ const getItems = (paramObject, resultsSelector, pageFunction, saveFunction) => {
     const result = {};
     params.map(value => ({
         key: value.key,// id: masterItems[value.masterItemId].name,
+        name: name,
         url: value.url,
         keyword: value.keyword || masterItems[value.key].sku,   // for production
         // keyword: value.keyword || (masterItems[value.key] ? masterItems[value.key].sku : "") ,  // for dev

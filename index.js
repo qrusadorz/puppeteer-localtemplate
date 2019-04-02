@@ -47,7 +47,7 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const crawl = async (browser, param) => {
     console.log("puppeteer start:", param.url);
 
-    const { url, resultsSelector, keyword, exactkeyword, pageFunction, saveFunction,
+    const { url, name, resultsSelector, keyword, exactkeyword, pageFunction, saveFunction,
         regexp = "", clicks = [] } = param;
 
     const page = await browser.newPage();
@@ -118,7 +118,7 @@ const crawl = async (browser, param) => {
         console.error("result:", param.url, param.keyword, price);
     }
 
-    return { url: param.url, price };
+    return { name, url: param.url, price };
 };
 
 const crawlSites = async (sites, browser) => {
