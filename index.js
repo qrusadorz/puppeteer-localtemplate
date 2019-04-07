@@ -56,6 +56,16 @@ const crawl = async (browser, param) => {
     // Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/73.0.3679.0 Safari/537.36
     await page.setUserAgent(config.userAgent);
 
+    // do not request image.
+    // see https://pptr.dev/#?product=Puppeteer&version=v1.12.2&show=api-pagesetrequestinterceptionvalue
+    await page.setRequestInterception(true);
+    page.on('request', interceptedRequest => {
+      if (interceptedRequest.url().endsWith('.png') || interceptedRequest.url().endsWith('.jpg'))
+        interceptedRequest.abort();
+      else
+        interceptedRequest.continue();
+    });
+
     await page.goto(url);
     // console.log("puppeteer loaded.");
     // await page.screenshot({path: 'example.png'});
@@ -139,9 +149,9 @@ const crawlSites = async (sites, browser) => {
         const items = [];
         for (const result of results) {
             if (!result || Number.isNaN(Number.parseInt(result.price))) {
-                // follow recovery case.
+                // follow recovery case.(fail safe)
                 throw Error(`価格取得失敗:${result ? result.url : ""}`);
-                // ignore case.
+                // ignore case.(fail soft)
                 // continue;
             }
             items.push(result);
