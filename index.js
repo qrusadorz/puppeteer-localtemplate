@@ -59,12 +59,19 @@ const crawl = async (browser, param) => {
     // do not request image.
     // see https://pptr.dev/#?product=Puppeteer&version=v1.12.2&show=api-pagesetrequestinterceptionvalue
     await page.setRequestInterception(true);
-    page.on('request', interceptedRequest => {
-      if (interceptedRequest.url().endsWith('.png') || interceptedRequest.url().endsWith('.jpg'))
-        interceptedRequest.abort();
-      else
-        interceptedRequest.continue();
+
+    page.on('request', request => {
+        if (request.resourceType() === 'image')
+          request.abort();
+        else
+          request.continue();
     });
+    // page.on('request', interceptedRequest => {
+    //   if (interceptedRequest.url().endsWith('.png') || interceptedRequest.url().endsWith('.jpg'))
+    //     interceptedRequest.abort();
+    //   else
+    //     interceptedRequest.continue();
+    // });
 
     await page.goto(url);
     // console.log("puppeteer loaded.");
