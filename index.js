@@ -47,8 +47,7 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const crawl = async (browser, param) => {
     console.log("puppeteer start:", param.url);
 
-    const { url, name, resultsSelector, keyword, exactkeyword, pageFunction, saveFunction,
-        regexp = "", clicks = [] } = param;
+    const { url, name, resultsSelector, pageFunctionParams, pageFunction, saveFunction, clicks = [] } = param;
 
     const page = await browser.newPage();
     // for jan
@@ -124,13 +123,13 @@ const crawl = async (browser, param) => {
     await page.waitForSelector(resultsSelector);
     // await page.evaluate(() => {debugger;});
 
-    const results = await page.$$eval(resultsSelector, pageFunction, { keyword, exactkeyword }, regexp);
+    const results = await page.$$eval(resultsSelector, pageFunction, pageFunctionParams);
     // await page.evaluate(() => {debugger;});
     await page.close();
 
     const price = saveFunction(results);
     if (!price) {
-        console.error("result:", url, keyword, price);
+        console.error("result:", url, pageFunctionParams.keyword, price);
     }
 
     return { name, url, price };
