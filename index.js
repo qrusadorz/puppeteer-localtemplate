@@ -14,8 +14,10 @@ const crawlDuration = 6000;
 const latestFilename = `latest.json`;
 
 const writeJsonToFile = json => {
-    fs.writeFileSync(`data${Date.now()}.json`, JSON.stringify(json));
-    // for upload
+    fs.writeFileSync(`data/data${Date.now()}.json`, JSON.stringify(json));
+}
+
+const writeJsonToLatestFile = json => {
     fs.writeFileSync(latestFilename, JSON.stringify(json));
 }
 
@@ -319,13 +321,14 @@ const crawlMain = async (browser, items, result, resultFailed) => {
         console.log(`main succeded:${time}s`);
 
         // store result
-        writeJsonToFile(result);
+        writeJsonToLatestFile(result);
         // about fail result
         console.log("failed items:", resultFailed.items);
         if (resultFailed.items.length > 0) {
             writeJsonToFailedFile(resultFailed);
             // If it fails, the server does not update.
         } else {
+            writeJsonToFile(result);
             deleteFailedFile();
             // update data of firebase
             await updateItems(result);
