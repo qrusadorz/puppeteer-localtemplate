@@ -47,7 +47,7 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const crawl = async (browser, param) => {
     console.log("puppeteer start:", param.url);
 
-    const { url, resultsSelector, keyword, exactkeyword, pageFunction, saveFunction,
+    const { url, name, resultsSelector, keyword, exactkeyword, pageFunction, saveFunction,
         regexp = "", clicks = [] } = param;
 
     const page = await browser.newPage();
@@ -55,6 +55,23 @@ const crawl = async (browser, param) => {
     // console.log("agent:", await browser.userAgent());
     // Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/73.0.3679.0 Safari/537.36
     await page.setUserAgent(config.userAgent);
+
+    // do not request image.
+    // see https://pptr.dev/#?product=Puppeteer&version=v1.12.2&show=api-pagesetrequestinterceptionvalue
+    await page.setRequestInterception(true);
+
+    page.on('request', request => {
+        if (request.resourceType() === 'image')
+          request.abort();
+        else
+          request.continue();
+    });
+    // page.on('request', interceptedRequest => {
+    //   if (interceptedRequest.url().endsWith('.png') || interceptedRequest.url().endsWith('.jpg'))
+    //     interceptedRequest.abort();
+    //   else
+    //     interceptedRequest.continue();
+    // });
 
     await page.goto(url);
     // console.log("puppeteer loaded.");
@@ -118,7 +135,7 @@ const crawl = async (browser, param) => {
         console.error("result:", param.url, param.keyword, price);
     }
 
-    return { url: param.url, price };
+    return { name, url: param.url, price };
 };
 
 const crawlSites = async (sites, browser) => {
@@ -139,9 +156,9 @@ const crawlSites = async (sites, browser) => {
         const items = [];
         for (const result of results) {
             if (!result || Number.isNaN(Number.parseInt(result.price))) {
-                // follow recovery case.
+                // follow recovery case.(fail safe)
                 throw Error(`価格取得失敗:${result ? result.url : ""}`);
-                // ignore case.
+                // ignore case.(fail soft)
                 // continue;
             }
             items.push(result);
@@ -152,7 +169,7 @@ const crawlSites = async (sites, browser) => {
         console.error(e);
     } finally {
         // 規定時間未満の連続アクセス防止
-        const processTime = (Date.now() - nowTime); //  / 1000;
+        const processTime = (Date.now() - nowTime);
         if (processTime < crawlDuration) {
             console.log('sleep...');
             await sleep(crawlDuration - processTime);
@@ -216,7 +233,7 @@ const crawlMain = async (browser, items, result, resultFailed) => {
     }
 };
 
-(async () => {
+(async () => {    
     let browser = { close: () => { } };
     try {
         browser = await puppeteer.launch({
@@ -246,7 +263,41 @@ const crawlMain = async (browser, items, result, resultFailed) => {
         const resultFailed = { items: [], timestamp };
 
         // TODO 差分更新に対応する場合、効率を考えると一旦オブジェクトに変換したいところ。
-        // 数が少ないのでfind活用でもいいかもしれないが…find->remove
+        // 差分更新のシナリオ
+        // 1.1  recoveryロジックを利用して、latest.json(Array)をロード
+        //        result.items = readItems().items;
+        // 1.2  1.1をObjectに変換
+        //        // Array => Object
+        //        params.forEach(value => result[value.key?] = value);
+        // 2.   差分Items(restore同様実質Idsになるだろう)のロード＜＝高頻度抽出は別途検討
+        //        readFailedItems().itemsレベルもの
+        // 3.   2の差分高頻度更新データをcrawl
+        //        await crawlMain(browser, getSelectItems(readFailedItems().items), result, resultFailed);
+        // 4.1. 3の結果をObjectに変換
+        //        // Array => Object
+        //        const diffItems = result.items.forEach(value => resultDiff[value.key?] = value);
+        // 4.2. 4.1の結果を1.2に上書き（取得分のみ更新）
+        //        diffItems.forEach(value => result[value.key?] = value);
+        // 5.1. 4.2の結果をArrayに変換
+        //        // Object => Array
+        //        const params = Object.keys(result).map(key => ({ ...result[key], key}));
+        // 5.2. price順にソートして差分更新完了
+        //        result.items.sort((a, b) => b.percentage - a.percentage);
+        // 6.   Function化によるサイト単位の処理になった場合に難易度アップ？Function化も併せて要検討
+
+        // Function化
+        // 優先事項としては、将来的に規模が大きくなってもロジックの大きな修正不要、コストは二の次でOK。
+        // ・ローカル同様にアイテム単位で取得
+        //   △単純に現状の並列実行だとメモリが足りない都合、並列数を制限が前提。シングルプロセスのためクロールサイトが多くなるとつらくなってくる。
+        //   △待ち時間のコストは無駄が多そう。
+        //   〇ローカルプログラムと共有部分多い。
+        // ・サイトごとにFunctionを割り当てる
+        //   △サイトへのアクセス間隔の管理が単純。一方で待ち時間のコストは無駄になる。
+        //   △ローカルプログラムとは作りが大きく変わる可能性あり。
+        // ・サイトごと更にアイテムごとにFunctionを割り当てる
+        //   △サイトへのアクセス間隔の管理が複雑（1アイテムごとに次のキューを投げる？）。一方で待ち時間のコストは最適化される。(ブラウザ起動のオーバーヘッドは要検証)
+        //   △ローカルプログラムとは作りが大きく変わる可能性あり。
+
 
         await crawlMain(browser, items, result, resultFailed);
         // for dev

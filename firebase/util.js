@@ -29,6 +29,9 @@ const uploadFile = async (filename) => {
         },
     });
 
+    // PC ChromeのほうでたまにCORSエラーが出るため、CORS設定するように変更。
+    await setCors(bucket);
+
     // // console.log("response:", response);
     // const { metadata } = response[0];
     // // console.log("metadata:", metadata);
