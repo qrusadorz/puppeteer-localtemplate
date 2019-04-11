@@ -26,6 +26,7 @@ const getItems = (paramObject, resultsSelector, pageFunction, saveFunction, name
             // keyword: value.keyword || masterItems[value.key].sku,   // for production
             keyword: value.keyword || (masterItems[value.key] ? masterItems[value.key].sku : "") ,  // for dev // TODO 4/2　発売禁止のためしばらくproduction化
             exactkeyword: value.exactkeyword || null, // 完全一致キーワードを求めるもの
+            index: value.index, // querySelectAll()の後のターゲットとなるElementのIndex
             regexp: value.regexp || "", // 表形式で途中の金額取得時
         },
         clicks: value.clicks || null,   // clickが必要なもの
