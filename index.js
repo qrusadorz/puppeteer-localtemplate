@@ -65,14 +65,12 @@ const crawl = async (browser, param) => {
           request.abort();
         else
           request.continue();
-    });
-    // page.on('request', interceptedRequest => {
-    //   if (interceptedRequest.url().endsWith('.png') || interceptedRequest.url().endsWith('.jpg'))
-    //     interceptedRequest.abort();
-    //   else
-    //     interceptedRequest.continue();
-    // });
-
+        // if (interceptedRequest.url().endsWith('.png') || interceptedRequest.url().endsWith('.jpg'))
+        //     interceptedRequest.abort();
+        // else
+        //     interceptedRequest.continue();
+   });
+ 
     await page.goto(url);
     // console.log("puppeteer loaded.");
     // await page.screenshot({path: 'example.png'});
@@ -126,16 +124,16 @@ const crawl = async (browser, param) => {
     await page.waitForSelector(resultsSelector);
     // await page.evaluate(() => {debugger;});
 
-    const results = await page.$$eval(resultsSelector, pageFunction, { keyword, exactkeyword }, url, regexp);
+    const results = await page.$$eval(resultsSelector, pageFunction, { keyword, exactkeyword }, regexp);
     // await page.evaluate(() => {debugger;});
     await page.close();
 
     const price = saveFunction(results);
     if (!price) {
-        console.error("result:", param.url, param.keyword, price);
+        console.error("result:", url, keyword, price);
     }
 
-    return { name, url: param.url, price };
+    return { name, url, price };
 };
 
 const crawlSites = async (sites, browser) => {
