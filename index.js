@@ -6,6 +6,7 @@ const { config } = require('./configs/config');
 
 const fs = require("fs");
 
+const isAcceptEmptyResult = true;   // (true: fail soft, false: fail safe)
 const isRecovery = false;
 const isDev = false;
 const enableBrowserConsole = false;
@@ -154,11 +155,19 @@ const crawlSites = async (sites, browser) => {
         // filter failed data
         const items = [];
         for (const result of results) {
-            if (!result || Number.isNaN(Number.parseInt(result.price))) {
-                // follow recovery case.(fail safe)
-                throw Error(`価格取得失敗:${result ? result.url : ""}`);
+            if (!result) {
+                // It does not occur?
+                throw Error(`価格取得失敗: result null`);
+            }
+            if (Number.isNaN(Number.parseInt(result.price))) {
+                if (!isAcceptEmptyResult) {
+                    // follow recovery case.(fail safe)
+                    throw Error(`価格取得失敗: ${result.url}`);
+                }
                 // ignore case.(fail soft)
                 // continue;
+                result.price = 0;
+                // TODO consider how to notify an error
             }
             items.push(result);
         }
