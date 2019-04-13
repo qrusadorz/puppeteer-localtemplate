@@ -12,7 +12,7 @@
     "chart": "node createItemDetailsData.js"
   },
   "dependencies": {
-    "firebase": "^5.9.3",
+    "firebase": "^5.9.4",
     "firebase-admin": "^7.2.0",
     "firebase-functions": "^2.2.1",
     "jsdom": "^14.0.0",
