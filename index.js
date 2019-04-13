@@ -6,6 +6,7 @@ const { config } = require('./configs/config');
 
 const fs = require("fs");
 
+const isAcceptEmptyResult = true;   // (true: fail soft, false: fail safe)
 const isRecovery = false;
 const isDev = false;
 const enableBrowserConsole = false;
@@ -14,8 +15,10 @@ const crawlDuration = 6000;
 const latestFilename = `latest.json`;
 
 const writeJsonToFile = json => {
-    fs.writeFileSync(`data${Date.now()}.json`, JSON.stringify(json));
-    // for upload
+    fs.writeFileSync(`data/data${Date.now()}.json`, JSON.stringify(json));
+}
+
+const writeJsonToLatestFile = json => {
     fs.writeFileSync(latestFilename, JSON.stringify(json));
 }
 
@@ -152,11 +155,19 @@ const crawlSites = async (sites, browser) => {
         // filter failed data
         const items = [];
         for (const result of results) {
-            if (!result || Number.isNaN(Number.parseInt(result.price))) {
-                // follow recovery case.(fail safe)
-                throw Error(`価格取得失敗:${result ? result.url : ""}`);
+            if (!result) {
+                // It does not occur?
+                throw Error(`価格取得失敗: result null`);
+            }
+            if (Number.isNaN(Number.parseInt(result.price))) {
+                if (!isAcceptEmptyResult) {
+                    // follow recovery case.(fail safe)
+                    throw Error(`価格取得失敗: ${result.url}`);
+                }
                 // ignore case.(fail soft)
                 // continue;
+                result.price = 0;
+                // TODO consider how to notify an error
             }
             items.push(result);
         }
@@ -319,13 +330,14 @@ const crawlMain = async (browser, items, result, resultFailed) => {
         console.log(`main succeded:${time}s`);
 
         // store result
-        writeJsonToFile(result);
+        writeJsonToLatestFile(result);
         // about fail result
         console.log("failed items:", resultFailed.items);
         if (resultFailed.items.length > 0) {
             writeJsonToFailedFile(resultFailed);
             // If it fails, the server does not update.
         } else {
+            writeJsonToFile(result);
             deleteFailedFile();
             // update data of firebase
             await updateItems(result);
